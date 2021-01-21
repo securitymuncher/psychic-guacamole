@@ -23,7 +23,7 @@ param (
 #Functions needed
 #generate secure passwords
 function get-strongpwd {
-$basepwd = "FowlOwl"
+$basepwd = "DirtyBirdsAtNight"
 $date = get-date -format yyyy-mm-dd
 $objRand = new-object random
 $num = $objRand.next(1,500)
