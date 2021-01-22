@@ -24,7 +24,7 @@ param (
 #generate secure passwords
 function get-strongpwd {
 $basepwd = "DirtyBirdsAtNight"
-$date = get-date -format yyyy-mm-dd
+$date = get-date -format yyyy-MM-dd
 $objRand = new-object random
 $num = $objRand.next(1,500)
 $finalPWD = $basepwd + "!" + $date + "!" + $num
@@ -33,8 +33,8 @@ $finalPWD
 #Get local users and document them
 function get-lusers {
     $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
-    $adsi.Children | Where-Object {$_.SchemaClassName -eq 'user'} | Foreach-Object {
-        $groups = $_.Groups() | Foreach-Object {$_.GetType().InvokeMember("Name", 'GetProperty', $null, $_, $null)}
+    $adsi.Children | Where-Object {$_.SchemaClassName -eq "user"} | Foreach-Object {
+        $groups = $_.Groups() | Foreach-Object {$_.GetType().InvokeMember("Name", "GetProperty", $null, $_, $null)}
         $namey = $_.name
         if ($null = $groups) {
             $groups = "N/A"
@@ -66,13 +66,14 @@ $users = get-lusers
 
 #change passwords
 Write-Output "Attempting to change user passwors"
+$fdate = get-date -format o | ForEach-Object { $_ -replace ":","."}
 foreach ($user in $users) {
     try {
         $plainTextPWD = get-strongpwd
         Write-Output "Setting $user to $plainTextPWD"
         $securePWD = ConvertTo-SecureString -String $plainTextPWD -AsPlainText -Force
         set-localuser -name $user -Password $securePWD
-        Write-Output "$user,$securePWD" >> $env:COMPUTERNAME-localusers.txt
+        Write-Output "$user,$plainTextPWD" >> $env:COMPUTERNAME-$fdate-localusers.txt
     }
     catch {
         Write-Output "Failure when trying to change a local user password!"
@@ -92,66 +93,66 @@ foreach ($user in $users) {
 #Powershell version
 Write-Output "Adding outbound rules to prevent LOLBins."
 #add rules to prevent lolbins outbound
-$Params = @{ "DisplayName" = 'WGU-Block Network Connections-Notepad.exe'
-             "Direction" = 'Outbound'
-             "Action" = 'Block'
-             "Program" = '%systemroot%\system32\notepad.exe' }
+$Params = @{ "DisplayName" = "WGU-Block Network Connections-Notepad.exe"
+             "Direction" = "Outbound"
+             "Action" = "Block"
+             "Program" = "%systemroot%\system32\notepad.exe" }
 New-NetFirewallRule @params
-$Params = @{ "DisplayName" = 'WGU-Block Network Connections-regsvr32.exe'
-             "Direction" = 'Outbound'
-             "Action" = 'Block'
-             "Program" = '%systemroot%\system32\regsvr32.exe' }
+$Params = @{ "DisplayName" = "WGU-Block Network Connections-regsvr32.exe"
+             "Direction" = "Outbound"
+             "Action" = "Block"
+             "Program" = "%systemroot%\system32\regsvr32.exe" }
 New-NetFirewallRule @Params
-$Params = @{ "DisplayName" = 'WGU-Block Network Connections-calc.exe' 
-             "Direction" = 'Outbound'
-             "Action" = 'Block'
-             "Program" = '%systemroot%\system32\calc.exe' }
+$Params = @{ "DisplayName" = "WGU-Block Network Connections-calc.exe" 
+             "Direction" = "Outbound"
+             "Action" = "Block"
+             "Program" = "%systemroot%\system32\calc.exe" }
 New-NetFirewallRule @Params
-$Params = @{ "DisplayName" = 'WGU-Block Network Connections-mshta.exe'
-             "Direction" = 'Outbound'
-             "Action" = 'Block'
-             "Program" = '%systemroot%\system32\mshta.exe' }
+$Params = @{ "DisplayName" = "WGU-Block Network Connections-mshta.exe"
+             "Direction" = "Outbound"
+             "Action" = "Block"
+             "Program" = "%systemroot%\system32\mshta.exe" }
 New-NetFirewallRule @Params
-$Params = @{ "DisplayName" = 'WGU-Block Network Connections-wscript.exe'
-             "Direction" = 'Outbound'
-             "Action" = 'Block'
-             "Program" = '%systemroot%\system32\wscript.exe' }
+$Params = @{ "DisplayName" = "WGU-Block Network Connections-wscript.exe"
+             "Direction" = "Outbound"
+             "Action" = "Block"
+             "Program" = "%systemroot%\system32\wscript.exe" }
 New-NetFirewallRule @Params
-$Params = @{ "DisplayName" = 'WGU-Block Network Connections-cscript.exe' 
-             "Direction" = 'Outbound'
-             "Action" = 'Block'
-             "Program" = '%systemroot%\system32\cscript.exe' }
+$Params = @{ "DisplayName" = "WGU-Block Network Connections-cscript.exe" 
+             "Direction" = "Outbound"
+             "Action" = "Block"
+             "Program" = "%systemroot%\system32\cscript.exe" }
 New-NetFirewallRule @Params
-$Params = @{ "DisplayName" = 'WGU-Block Network Connections-runscripthelper.exe'
-             "Direction" = 'Outbound'
-             "Action" = 'Block'
-             "Program" = '%systemroot%\system32\runscripthelper.exe' }
+$Params = @{ "DisplayName" = "WGU-Block Network Connections-runscripthelper.exe"
+             "Direction" = "Outbound"
+             "Action" = "Block"
+             "Program" = "%systemroot%\system32\runscripthelper.exe" }
 New-NetFirewallRule @Params
-$Params = @{ "DisplayName" = 'WGU-Block Network Connections-regsvr32.exe'
-             "Direction" = 'Outbound'
-             "Action" = 'Block'
-             "Program" = '%systemroot%\system32\regsvr32.exe' }
+$Params = @{ "DisplayName" = "WGU-Block Network Connections-regsvr32.exe"
+             "Direction" = "Outbound"
+             "Action" = "Block"
+             "Program" = "%systemroot%\system32\regsvr32.exe" }
 New-NetFirewallRule @Params
 
 #add rules to filter inbound
 #Commented out just to be used as a reference
-# $Params = @{ "DisplayName" = 'WGY-Block-Inbound-SMB-445'
-#              "Direction" = 'Inbound'
-#              "Port" = '445'}
+# $Params = @{ "DisplayName" = "WGY-Block-Inbound-SMB-445"
+#              "Direction" = "Inbound"
+#              "Port" = "445"}
 # New-NetFirewallRule @Params
 
 #enable firewall
-$Params = @{ "Profile" = 'Domain,Public,Private'
-             "Enabled" = 'true'
-             "defaultInboundAction" = 'Block'
-             "LogAllowed" = 'True'
-             "LogBlocked" = 'True'
-             "LogIgnored" = 'True'
-             "LogFileName" = '%windir%\system32\logfiles\firewall\pfirewall.log'
-             "LogMaxSizeKilobytes" = '32767'
-
+$Params = @{ #"Name" = "Domain, Public, Private"
+             "Enabled" = "true"
+             "defaultInboundAction" = "Block"
+             "LogAllowed" = "True"
+             "LogBlocked" = "True"
+             "LogIgnored" = "True"
+             "LogFileName" = "%windir%\system32\logfiles\firewall\pfirewall.log"
+             "LogMaxSizeKilobytes" = "32767"
+             "NotifyOnListen" = "True"
 }
-Set-NetFirewallProfile @Params
+Set-NetFirewallProfile @Params -all
 # Set-NetFirewallProfile -Profile Domain,Public,Private `
 #                        -Enabled True `
 #                        -DefaultInboundAction Block `
@@ -161,188 +162,218 @@ Set-NetFirewallProfile @Params
 #                        -LogMaxSizeKilobytes 32767
 
 #Baseline security hardening
-#disable smbv1
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB1 -Type DWORD -Value 0 -Force
+Write-Output "Performing some baseline hardening...."
+#disable smb v1
+Write-Output "Disabling SMB V1 via RegKey"
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -name "SMB1" -Type DWORD -Value 0 -Force
 
-#disable smbv2
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" SMB2 -Type DWORD -Value 0 -Force
+#disable smb v2
+Write-Output "Disabling SMB V2 via RegKey"
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -name "SMB2" -Type DWORD -Value 0 -Force
 
 #Enable smb encryption for 2012r2 or higher
-Set-SmbServerConfiguration –EncryptData $true
+Write-Output "Enabling SMB Encryption"
+Set-SmbServerConfiguration –EncryptData $true -Confirm:$false
 
 #Disable SMB null sessions
+#Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -name "SMB1" -Type DWORD -Value 0 -Force
 Write-Output "Disabling SMB null sessions."
-$registryPath = "HKLM:\System\CurrentControlSet\Control\Lsa"
-$Params = @{ "Path" = 'HKLM:\System\CurrentControlSet\Control\Lsa'
-             "Name" = 'RestrictAnonymous'
-             "Value" = "1"
-             "PropertyType" = 'DWORD'
-}
-if(!(Test-Path $registryPath))  {
-    New-Item -Path $registryPath -Force | Out-Null
-    New-ItemProperty $params -Force | Out-Null
-}
-else {
-    New-ItemProperty $params -Force | Out-Null
-}
-$Params = @{ "Path" = 'HKLM:\System\CurrentControlSet\Control\Lsa'
-             "Name" = 'RestrictAnonymousSAM'
-             "Value" = "1"
-             "PropertyType" = 'DWORD'
-}
-if(!(Test-Path $registryPath))  {
-    New-Item -Path $registryPath -Force | Out-Null
-    New-ItemProperty $params -Force | Out-Null
-}
-else {
-    New-ItemProperty $params -Force | Out-Null
-}
-$Params = @{ "Path" = 'HKLM:\System\CurrentControlSet\Control\Lsa'
-             "Name" = 'EveryoneIncludesAnonymous'
-             "Value" = "0"
-             "PropertyType" = 'DWORD'
-}
-if(!(Test-Path $registryPath))  {
-    New-Item -Path $registryPath -Force | Out-Null
-    New-ItemProperty $params -Force | Out-Null
-}
-else {
-    New-ItemProperty $params -Force | Out-Null
-}
+Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa" -name "RestrictAnonymous" -Type DWORD -Value 1 -Force
+# $registryPath = "HKLM:\System\CurrentControlSet\Control\Lsa"
+# $Params = @{ "Path" = "HKLM:\System\CurrentControlSet\Control\Lsa"
+#              "Name" = "RestrictAnonymous"
+#              "Value" = "1"
+#              "PropertyType" = "DWORD"
+# }
+# if(!(Test-Path $registryPath))  {
+#     New-Item -Path $registryPath -Force | Out-Null
+#     Write-Output "Path Not Found, creating it with prejudice!"
+#     New-ItemProperty $params -Force | Out-Null
+# }
+# else {
+#     New-ItemProperty $params -Force | Out-Null
+# }
+Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa" -name "RestrictAnonymousSAM" -Type DWORD -Value 1 -Force
+# $Params = @{ "Path" = "HKLM:\System\CurrentControlSet\Control\Lsa"
+#              "Name" = "RestrictAnonymousSAM"
+#              "Value" = "1"
+#              "PropertyType" = "DWORD"
+# }
+# if(!(Test-Path $registryPath))  {
+#     New-Item -Path $registryPath -Force | Out-Null
+#     New-ItemProperty $params -Force | Out-Null
+# }
+# else {
+#     New-ItemProperty $params -Force | Out-Null
+# }
+Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa" -name "EveryoneIncludesAnonymous" -Type DWORD -Value 0 -Force
+# $Params = @{ "Path" = "HKLM:\System\CurrentControlSet\Control\Lsa"
+#              "Name" = "EveryoneIncludesAnonymous"
+#              "Value" = "0"
+#              "PropertyType" = "DWORD"
+# }
+# if(!(Test-Path $registryPath))  {
+#     New-Item -Path $registryPath -Force | Out-Null
+#     New-ItemProperty $params -Force | Out-Null
+# }
+# else {
+#     New-ItemProperty $params -Force | Out-Null
+# }
 
 #Disable llmnr to prevent bad times
 Write-Output "Disabling LLMNR"
 #REG ADD  "HKLM\Software\policies\Microsoft\Windows NT\DNSClient"
 #REG ADD  "HKLM\Software\policies\Microsoft\Windows NT\DNSClient" /v "EnableMulticast" /t REG_DWORD /d "0" /f
-$registryPath = "HKLM:\Software\policies\Microsoft\Windows NT\DNSClient"
-$Params = @{ "Path" = 'HKLM:\Software\policies\Microsoft\Windows NT\DNSClient'
-             "Name" = 'EnableMulticast'
-             "Value" = "0"
-             "PropertyType" = 'DWORD'
-}
-if(!(Test-Path $registryPath))  {
-    New-Item -Path $registryPath -Force | Out-Null
-    New-ItemProperty $params -Force | Out-Null
-}
-else {
-    New-ItemProperty $params -Force | Out-Null
-}
+New-Item -Path "HKLM:\Software\policies\Microsoft\Windows NT" -Name "DNSClient"
+Set-ItemProperty -Path "HKLM:\Software\policies\Microsoft\Windows NT\DNSClient" -name "EnableMulticast" -Type DWORD -Value 0 -Force
+# $registryPath = "HKLM:\Software\policies\Microsoft\Windows NT\DNSClient"
+# $Params = @{ "Path" = "HKLM:\Software\policies\Microsoft\Windows NT\DNSClient"
+#              "Name" = "EnableMulticast"
+#              "Value" = "0"
+#              "PropertyType" = "DWORD"
+# }
+# if(!(Test-Path $registryPath))  {
+#     New-Item -Path $registryPath -Force | Out-Null
+#     New-ItemProperty $params -Force | Out-Null
+# }
+# else {
+#     New-ItemProperty $params -Force | Out-Null
+# }
 
 #Harden LSA to protect from mimikatz etc
 #reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\LSASS.exe" /v AuditLevel /t REG_DWORD /d 00000008 /f
 Write-Output "Enabling protections for LSA"
-$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
-$Params = @{ "Path" = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options'
-             "Name" = 'AuditLevel'
-             "Value" = "8"
-             "PropertyType" = 'DWORD'
-}
-if(!(Test-Path $registryPath))  {
-    New-Item -Path $registryPath -Force | Out-Null
-    New-ItemProperty $params -Force | Out-Null
-}
-else {
-    New-ItemProperty $params -Force | Out-Null
-}
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options" -name "AuditLevel" -Type DWORD -Value 8 -Force
+# $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
+# $Params = @{ "Path" = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
+#              "Name" = "AuditLevel"
+#              "Value" = "8"
+#              "PropertyType" = "DWORD"
+# }
+# if(!(Test-Path $registryPath))  {
+#     New-Item -Path $registryPath -Force | Out-Null
+#     New-ItemProperty $params -Force | Out-Null
+# }
+# else {
+#     New-ItemProperty $params -Force | Out-Null
+# }
 # reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa" /v RunAsPPL /t REG_DWORD /d 00000001 /f
-$registryPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"
-$Params = @{ "Path" = 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa'
-             "Name" = 'RunAsPPL'
-             "Value" = "1"
-             "PropertyType" = 'DWORD'
-}
-if(!(Test-Path $registryPath))  {
-    New-Item -Path $registryPath -Force | Out-Null
-    New-ItemProperty $params -Force | Out-Null
-}
-else {
-    New-ItemProperty $params -Force | Out-Null
-}
+Write-Output "Enabling PPL for LSA"
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa" -name "RunAsPPL" -Type DWORD -Value 1 -Force
+# $registryPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"
+# $Params = @{ "Path" = "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa"
+#              "Name" = "RunAsPPL"
+#              "Value" = "1"
+#              "PropertyType" = "DWORD"
+# }
+# if(!(Test-Path $registryPath))  {
+#     New-Item -Path $registryPath -Force | Out-Null
+#     New-ItemProperty $params -Force | Out-Null
+# }
+# else {
+#     New-ItemProperty $params -Force | Out-Null
+# }
 # reg add "HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" /v UseLogonCredential /t REG_DWORD /d 0 /f
-$registryPath = "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest"
-$Params = @{ "Path" = 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest'
-             "Name" = 'UseLogonCredential'
-             "Value" = "0"
-             "PropertyType" = 'DWORD'
-}
-if(!(Test-Path $registryPath))  {
-    New-Item -Path $registryPath -Force | Out-Null
-    New-ItemProperty $params -Force | Out-Null
-}
-else {
-    New-ItemProperty $params -Force | Out-Null
-}
+New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders" -Name "WDigest"
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest" -name "UseLogonCredential" -Type DWORD -Value 0 -Force
+# $registryPath = "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest"
+# $Params = @{ "Path" = "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest"
+#              "Name" = "UseLogonCredential"
+#              "Value" = "0"
+#              "PropertyType" = "DWORD"
+# }
+# if(!(Test-Path $registryPath))  {
+#     New-Item -Path $registryPath -Force | Out-Null
+#     New-ItemProperty $params -Force | Out-Null
+# }
+# else {
+#     New-ItemProperty $params -Force | Out-Null
+# }
 # reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation" /v AllowProtectedCreds /t REG_DWORD /d 1 /f
-$registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation"
-$Params = @{ "Path" = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation'
-             "Name" = 'AllowProtectedCreds'
-             "Value" = "1"
-             "PropertyType" = 'DWORD'
-}
-if(!(Test-Path $registryPath))  {
-    New-Item -Path $registryPath -Force | Out-Null
-    New-ItemProperty $params -Force | Out-Null
-}
-else {
-    New-ItemProperty $params -Force | Out-Null
-}
+New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\" -Name "CredentialsDelegation"
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation" -name "AllowProtectedCreds" -Type DWORD -Value 1 -Force
+# $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation"
+# $Params = @{ "Path" = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation"
+#              "Name" = "AllowProtectedCreds"
+#              "Value" = "1"
+#              "PropertyType" = "DWORD"
+# }
+# if(!(Test-Path $registryPath))  {
+#     New-Item -Path $registryPath -Force | Out-Null
+#     New-ItemProperty $params -Force | Out-Null
+# }
+# else {
+#     New-ItemProperty $params -Force | Out-Null
+# }
 #disable netbios over tcp/ip and lmhosts lookups
 $nics = Get-WmiObject win32_NetworkAdapterConfiguration
 foreach ($nic in $nics){
         $nic.settcpipnetbios(2) # 2 = disable netbios on interface
-        $nic.enablewins($false,$false) #disable wins
+        # $nic.enablewins($false,$false) #disable wins
     }
 #enable powershell logging
 Write-Output "Enabling powershell logging"
-# reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging" /v EnableModuleLogging /t REG_DWORD /d 1 /f
-$registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging"
-$Params = @{ "Path" = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging'
-             "Name" = 'EnableModuleLogging'
-             "Value" = "1"
-             "PropertyType" = 'DWORD'
-}
-if(!(Test-Path $registryPath))  {
-    New-Item -Path $registryPath -Force | Out-Null
-    New-ItemProperty $params -Force | Out-Null
-}
-else {
-    New-ItemProperty $params -Force | Out-Null
-}
-# reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" /v EnableScriptBlockLogging /t REG_DWORD /d 1 /f
-$registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging"
-$Params = @{ "Path" = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging'
-             "Name" = 'EnableModuleLogging'
-             "Value" = "1"
-             "PropertyType" = 'DWORD'
-}
-if(!(Test-Path $registryPath))  {
-    New-Item -Path $registryPath -Force | Out-Null
-    New-ItemProperty $params -Force | Out-Null
-}
-else {
-    New-ItemProperty $params -Force | Out-Null
-}
-#reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit" /v ProcessCreationIncludeCmdLine_Enabled /t REG_DWORD /d 1 /f
-$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit"
-$Params = @{ "Path" = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit'
-             "Name" = 'ProcessCreationIncludeCmdLine_Enabled'
-             "Value" = "1"
-             "PropertyType" = 'DWORD'
-}
-if(!(Test-Path $registryPath))  {
-    New-Item -Path $registryPath -Force | Out-Null
-    New-ItemProperty $params -Force | Out-Null
-}
-else {
-    New-ItemProperty $params -Force | Out-Null
-}
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging" /v EnableModuleLogging /t REG_DWORD /d 1 /f
+# New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\" -Name "ModuleLogging"
+# Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging" -name "EnableModuleLogging" -Type DWORD -Value 1 -Force
+# $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging"
+# $Params = @{ "Path" = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging"
+#              "Name" = "EnableModuleLogging"
+#              "Value" = "1"
+#              "PropertyType" = "DWORD"
+# }
+# if(!(Test-Path $registryPath))  {
+#     New-Item -Path $registryPath -Force | Out-Null
+#     New-ItemProperty $params -Force | Out-Null
+# }
+# else {
+#     New-ItemProperty $params -Force | Out-Null
+# }
+ reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" /v EnableScriptBlockLogging /t REG_DWORD /d 1 /f
+# New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\" -Name "ScriptBlockLogging"
+# Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" -name "EnableScriptBlockLogging" -Type DWORD -Value 1 -Force
 
-#Bump windows event log size
-Write-Output "Increasing the Windows Event Log Size to 1.5GB"
-$Logs = Get-Eventlog -List | Select-Object -ExpandProperty Log
-Limit-Eventlog -Logname $Logs -MaximumSize 1.5Gb -OverflowAction OverwriteAsNeeded
+# $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging"
+# $Params = @{ "Path" = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging"
+#              "Name" = "EnableScriptBlockLogging"
+#              "Value" = "1"
+#              "PropertyType" = "DWORD"
+# }
+# if(!(Test-Path $registryPath))  {
+#     New-Item -Path $registryPath -Force | Out-Null
+#     New-ItemProperty $params -Force | Out-Null
+# }
+# else {
+#     New-ItemProperty $params -Force | Out-Null
+# }
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit" /v ProcessCreationIncludeCmdLine_Enabled /t REG_DWORD /d 1 /f
+# New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\" -Name "Audit"
+# Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit" -name "ProcessCreationIncludeCmdLine_Enabled" -Type DWORD -Value 1 -Force
+# $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit"
+# $Params = @{ "Path" = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit"
+#              "Name" = "ProcessCreationIncludeCmdLine_Enabled"
+#              "Value" = "1"
+#              "PropertyType" = "DWORD"
+# }
+# if(!(Test-Path $registryPath))  {
+#     New-Item -Path $registryPath -Force | Out-Null
+#     New-ItemProperty $params -Force | Out-Null
+# }
+# else {
+#     New-ItemProperty $params -Force | Out-Null
+# }
+
+# #Bump windows event log size
+# Write-Output "Increasing the Windows Event Log Size to 4GB"
+# $Logs = Get-Eventlog -List | Select-Object -ExpandProperty Log
+# foreach ($log in $logs) {
+#     Limit-Eventlog -Logname $Logs -MaximumSize 640000 -OverflowAction OverwriteAsNeeded
+# }
+
 
 #Disable SMB Compression
 #https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2020-0796
 Write-Output "Disabling SMB Compression for CVE 2020-0796"
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -name "DisableCompression" -Type DWORD -Value 1 -Force
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" /v DisableCompression /t REG_DWORD /d 1 /f
+# New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\" -Name "Parameters"
+# Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters" -name "DisableCompression" -Type DWORD -Value 1 -Force
